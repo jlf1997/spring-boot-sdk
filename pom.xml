@@ -1,0 +1,149 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.github.jlf1997</groupId>
+  <artifactId>spring-boot-sdk</artifactId>
+  <version>0.0.1</version>
+  <packaging>jar</packaging>
+
+  <name>spring-boot-sdk</name>
+  <url>http://maven.apache.org</url>
+  
+ <developers>
+		<developer>
+			<id>yx</id>
+			<name>yx</name>
+			<email>jlf1997@163.comt</email>
+			<organization>yx</organization>
+			<organizationUrl></organizationUrl>
+		</developer>
+ </developers>
+ 
+	<repositories>
+		<repository>
+		    <id>jitpack.io</id>
+		    <url>https://jitpack.io</url>
+		</repository>
+	</repositories>
+
+  <properties>
+    <project.encoding>UTF-8</project.encoding>
+	<java.version>1.8</java.version>
+	<junit.version>4.12</junit.version>	
+	<gson.version>2.2.4</gson.version>		
+	<guava.version>23.0</guava.version>
+	<springfox.version>2.8.0</springfox.version>		
+  </properties>
+  
+   <parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.5.10.RELEASE</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+  
+  <build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<executions>
+						<execution>
+							<goals>
+								<goal>integration-test</goal>
+								<goal>verify</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>				
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<source>${java.version}</source>
+						<target>${java.version}</target>
+						<encoding>${project.encoding}</encoding>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<configuration>
+						<encoding>${project.encoding}</encoding>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>${plugin.javadoc.version}</version>
+					<configuration>
+						<encoding>${project.encoding}</encoding>
+						<aggregate>true</aggregate>
+						<charset>${project.encoding}</charset>
+						<docencoding>${project.encoding}</docencoding>
+					</configuration>
+				</plugin>				 
+			</plugins>
+		</pluginManagement>
+	</build>
+
+  <dependencies>
+   <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+      <dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot</artifactId>	
+	</dependency>
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-configuration-processor</artifactId>		
+	</dependency>
+	<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-web</artifactId>
+		<exclusions>
+	        <exclusion>
+	            <groupId>com.fasterxml.jackson.core</groupId>
+	            <artifactId>jackson-databind</artifactId>
+	        </exclusion>                
+	    </exclusions>
+	</dependency>
+		
+	
+	<dependency>
+	<groupId>io.springfox</groupId>
+		<artifactId>springfox-swagger2</artifactId>	
+		<version>${springfox.version}</version>	
+	</dependency>	
+	<dependency>
+		<groupId>io.springfox</groupId>
+		<artifactId>springfox-swagger-ui</artifactId>
+		<version>${springfox.version}</version>	
+	</dependency>
+	<dependency>
+         <groupId>io.springfox</groupId>
+         <artifactId>springfox-bean-validators</artifactId>
+         <version>${springfox.version}</version>
+   </dependency>
+	<dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+     </dependency>
+     <dependency>
+	    <groupId>com.github.jlf1997</groupId>
+	    <artifactId>tools</artifactId>
+	    <version>0.0.1</version>
+	</dependency>	
+ 
+  </dependencies>
+</project>

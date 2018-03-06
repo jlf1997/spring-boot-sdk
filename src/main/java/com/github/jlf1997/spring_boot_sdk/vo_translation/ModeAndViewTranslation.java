@@ -7,13 +7,13 @@ import org.springframework.beans.BeanUtils;
 
 
 
-public abstract class ModeAndViewTranslation<M,V> {
+public abstract class ModeAndViewTranslation<M,V>{
 	
 	
 
-	public abstract  M viewToModel(V view,M model,Class<M> classM) throws InstantiationException, IllegalAccessException;
+	public abstract  M viewToModel(V view,Class<M> classM) throws InstantiationException, IllegalAccessException;
 	
-	public abstract  V modelToView(M model,V view,Class<V> classV) throws InstantiationException, IllegalAccessException;
+	public abstract  V modelToView(M model,Class<V> classV) throws InstantiationException, IllegalAccessException;
 	
 
 
@@ -21,22 +21,18 @@ public abstract class ModeAndViewTranslation<M,V> {
 
 	
 	public  List<M> viewListToModelList(List<V> viewlList,Class<M> classM) throws InstantiationException, IllegalAccessException {
-		List<M> list = new ArrayList<>();
-		M model ;
+		List<M> list = new ArrayList<>();	
 		
-		for(V view : viewlList) {
-			model = BeanUtils.instantiateClass(classM);
-			list.add(viewToModel(view,model,classM));
+		for(V view : viewlList) {		
+			list.add(viewToModel(view,classM));
 		}
 		return list;
 	}
 	
 	public  List<V> modelListToViewList(List<M> modelList,Class<V> classV) throws InstantiationException, IllegalAccessException {
 		List<V> list = new ArrayList<>();
-		V view ;
-		for(M model : modelList) {			
-			view = BeanUtils.instantiateClass(classV);
-			list.add(modelToView(model,view,classV));
+		for(M model : modelList) {		
+			list.add(modelToView(model,classV));
 		}
 		return list;
 	}

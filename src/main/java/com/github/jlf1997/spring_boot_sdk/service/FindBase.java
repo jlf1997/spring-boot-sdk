@@ -1,8 +1,10 @@
 package com.github.jlf1997.spring_boot_sdk.service;
 
+import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -13,14 +15,19 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.FatalBeanException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 import com.github.jlf1997.spring_boot_sdk.model.BaseModel;
 import com.github.jlf1997.spring_boot_sdk.model.TimeEntity;
+import com.github.jlf1997.spring_boot_sdk.util.RefUtil;
 
 
 
@@ -64,7 +71,32 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  imp
 	/**
 	 * 自定义查询条件
 	 */
-	public abstract void where(T t,List<Predicate>  predicates,Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb);
+	public  void where(T t,List<Predicate>  predicates,Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+		if(t!=null) {
+			PropertyDescriptor[] propertys = BeanUtils.getPropertyDescriptors(t.getClass());
+			for (PropertyDescriptor property : propertys) {	
+				Assert.notNull(property, "property must not be null");
+				Method readMethod = RefUtil.getReadMethod(property);				
+				if (readMethod != null ) {					
+					try {						
+						Object value = readMethod.invoke(t);						
+						
+						if(value!=null) {
+							predicates.add(cb.equal(root.get(RefUtil.getName(property)),  value));
+						}
+						
+					}
+					catch (Throwable ex) {
+						ex.printStackTrace();
+					}
+				}
+				
+				
+				
+			}
+		}
+		
+	}
 	
 	
 	/**

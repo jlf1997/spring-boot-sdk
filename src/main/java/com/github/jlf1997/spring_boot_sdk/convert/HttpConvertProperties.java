@@ -12,7 +12,7 @@ public class HttpConvertProperties {
 	  /**
 	   * 配置路径
 	   */
-	  private String path = "org.springboot.sdk.jpa.convert.gson.DefaultGsonConvert";
+	  private String path = "com.github.jlf1997.spring_boot_sdk.convert.gson.DefaultGsonConvert";
 	  
 	  
 	  

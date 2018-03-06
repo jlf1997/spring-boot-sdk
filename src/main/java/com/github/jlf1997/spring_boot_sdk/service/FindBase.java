@@ -64,9 +64,7 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  imp
 	/**
 	 * 自定义查询条件
 	 */
-	public  void where(T t,List<Predicate>  predicates,Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-		
-	}
+	public abstract void where(T t,List<Predicate>  predicates,Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb);
 	
 	
 	/**

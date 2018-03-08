@@ -13,6 +13,8 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.github.jlf1997.spring_boot_sdk.oper.DBFinder;
+
 import io.swagger.annotations.ApiModelProperty;
 
 
@@ -38,6 +40,7 @@ public class BaseModel {
 	@CreatedDate	
 	@Column(updatable=false)
 	@ApiModelProperty(value = "创建时间", example = "2014-01-01 14:22:13")
+	@DBFinder(added=false)
 	protected Date creTime;
 	
 	/**

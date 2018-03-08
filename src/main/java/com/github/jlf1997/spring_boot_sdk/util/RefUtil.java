@@ -1,6 +1,8 @@
 package com.github.jlf1997.spring_boot_sdk.util;
 
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -29,16 +31,18 @@ public class RefUtil {
 		return readMethod;
 	} 
 	
-	public static String getName(PropertyDescriptor property) {
-		if(property.attributeNames().hasMoreElements()) {
-			return property.attributeNames().nextElement();
-		}
-		return null;
-		
-		
+	public  static <T extends Annotation> T  getAnnotation(Field field,Class<T> annotationClass) {
+		boolean fieldHasAnno = field.isAnnotationPresent(annotationClass);  
+		 if(fieldHasAnno){  
+			 T fieldAnno = field.getAnnotation(annotationClass);
+			 return fieldAnno;
+		 }
+		 return null;
 		
 		
 	}
+	
+	
 	
 	
 }

@@ -10,6 +10,8 @@ import javax.persistence.criteria.Root;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -49,7 +51,24 @@ public abstract JpaSpecificationExecutor<T> specjpa();
 	 * @param updTimeEntity
 	 * @return
 	 */
-	public Page<T> findAll(T t, PageRequest pageRequest,TimeEntity createTimeEntity,TimeEntity updTimeEntity);
+	public Page<T> findAll(T t,TimeEntity createTimeEntity,TimeEntity updTimeEntity,PageRequest pageRequest);
+	
+	
+	/**
+	 * 分页条件查询
+	 * @param t
+	 * @param creTimeBegin
+	 * @param creTimeEnd
+	 * @param updTimeBegin
+	 * @param updTimeEnd
+	 * @param sortStr
+	 * @param direction
+	 * @param pageSize
+	 * @param pageIndex
+	 * @return
+	 */
+	public Page<T> findAll(T t,  Long creTimeBegin,Long creTimeEnd,Long updTimeBegin,Long updTimeEnd
+			,String sortStr,Direction direction,Integer pageSize,Integer pageIndex);
 	
 	/**
 	 * 条件查询第一条记录
@@ -63,6 +82,21 @@ public abstract JpaSpecificationExecutor<T> specjpa();
 	public T find(T t, TimeEntity createTimeEntity,TimeEntity updTimeEntity);
 	
 	
+	/**
+	 * 
+	 * @param t
+	 * @param creTimeBegin
+	 * @param creTimeEnd
+	 * @param updTimeBegin
+	 * @param updTimeEnd
+	 * @param sortStr
+	 * @param direction
+	 * @param pageSize
+	 * @param pageIndex
+	 * @return
+	 */
+	public T find(T t,  Long creTimeBegin,Long creTimeEnd,Long updTimeBegin,Long updTimeEnd
+			,String sortStr,Direction direction,Integer pageSize,Integer pageIndex);
 	
 	/**
 	 * 批量保存或更新
@@ -87,9 +121,44 @@ public abstract JpaSpecificationExecutor<T> specjpa();
 	 * @param updTimeEntity
 	 * @return
 	 */
-	public List<T> findAll(T t,TimeEntity createTimeEntity,TimeEntity updTimeEntity);
+	public List<T> findAll(T t,TimeEntity createTimeEntity,TimeEntity updTimeEntity,Sort sort);
 	
 	
+	/**
+	 * 条件查询所有属性
+	 * @param t
+	 * @param creTimeBegin
+	 * @param creTimeEnd
+	 * @param updTimeBegin
+	 * @param updTimeEnd
+	 * @param sortStr
+	 * @param direction
+	 * @return
+	 */
+	public List<T> findAll(T t,  Long creTimeBegin,Long creTimeEnd,Long updTimeBegin,Long updTimeEnd
+			,String sortStr,Direction direction);
+	
+	
+	
+	/**
+	 * 
+	 * @param t
+	 * @param creTimeBegin
+	 * @param creTimeEnd
+	 * @param updTimeBegin
+	 * @param updTimeEnd
+	 * @return
+	 */
+	public List<T> findAll(T t,  Long creTimeBegin,Long creTimeEnd,Long updTimeBegin,Long updTimeEnd);
+	
+	/**
+	 * 
+	 * @param t
+	 * @param createTimeEntity
+	 * @param updTimeEntity
+	 * @return
+	 */
+	public List<T> findAll(T t,  TimeEntity createTimeEntity,TimeEntity updTimeEntity);
 	
 	/**
 	 * 删除

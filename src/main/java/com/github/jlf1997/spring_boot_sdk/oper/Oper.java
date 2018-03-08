@@ -22,9 +22,8 @@ public enum Oper {
 	 BIT_EXIST_ALL,
 	 /** 二进制位 代表状态 均不存在*/
 	 BIT_NOT_EXIST_ANY,
-	 BIT_IS,
-	 /** 按位或*/
-	 BIT_OR
+	 /** 不等于*/
+	 NOT_EQUAL
 	 
 	
 }

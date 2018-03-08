@@ -41,6 +41,19 @@ public class SpringDateJpaOper<T> {
 		return cb.equal(root.get(attributeName),  value);
 		
 	}
+	
+	
+	/**
+	 * 不等于
+	 * @param attributeName
+	 * @param value
+	 * @return
+	 */
+	public Predicate notEqual(String attributeName, Object value) {
+		// TODO Auto-generated method stub
+		return cb.notEqual(root.get(attributeName),  value);
+	}
+
 
 	/**
 	 * 模糊查询
@@ -205,6 +218,7 @@ public class SpringDateJpaOper<T> {
 		return false;
 	}
 
+	
 	
 	
 }

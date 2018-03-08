@@ -39,6 +39,15 @@ public abstract JpaSpecificationExecutor<T> specjpa();
 	
 	
 	/**
+	 * 自定义查询条件
+	 * @param t
+	 * @param predicates
+	 * @param root
+	 * @param query
+	 * @param cb
+	 */
+	public  void addWhere(T t,List<Predicate>  predicates,Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb);
+	/**
 	 * 调整查询结果
 	 * @param t
 	 */

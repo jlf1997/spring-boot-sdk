@@ -34,7 +34,10 @@ import com.github.jlf1997.spring_boot_sdk.util.RefUtil;
 
 public abstract class FindBase<T extends BaseModel,ID extends Serializable>  implements IFindBase<T,ID>{
 	
+	
+	
 
+	
 	/**
 	 * JpaSpecificationExecutor对象
 	 */
@@ -44,7 +47,15 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  imp
 	 */
 	public abstract JpaRepository<T,ID> jpa();
 	
+	/**
+	 * 追加查询条件
+	 */
+	public abstract void addWhere(T t,List<Predicate>  predicates,Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb);
 	
+	
+	
+	
+
 	
 	
 	/**
@@ -69,9 +80,12 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  imp
 	}
 	
 	
+	
+	
 	/**
 	 * 自定义查询条件
 	 */
+	@Override
 	public  void where(T t,List<Predicate>  predicates,Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
 		if(t!=null) {		
 			Field[] fields = t.getClass().getDeclaredFields();
@@ -120,13 +134,16 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  imp
 								case BIT_EXIST_ALL:
 									predicate = springDateJpaOper.bitExistALL(field.getName(), value);
 									break;
+								case NOT_EQUAL:
+									predicate = springDateJpaOper.notEqual(field.getName(), value);
+									break;
 								default:
 									break;								
 								}
 								if(predicate!=null) {
 									predicates.add(predicate);																		
 								}
-							}else {
+							}else if(dbOper.added()){
 								predicates.add(cb.equal(root.get(field.getName()),  value));
 							}
 						}
@@ -144,12 +161,12 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  imp
 	
 	@Override
 	public List<T> findAll(T t, Long creTimeBegin, Long creTimeEnd, Long updTimeBegin, Long updTimeEnd) {
-		// TODO Auto-generated method stub
-		return findAll(t,creTimeBegin,creTimeEnd,updTimeBegin,updTimeEnd,null,null);
+		
+		return findAll(t,creTimeBegin,creTimeEnd,updTimeBegin,updTimeEnd,(String)null,(Direction)null);
 	}
+	
 	@Override
 	public List<T> findAll(T t, TimeEntity createTimeEntity, TimeEntity updTimeEntity) {
-		// TODO Auto-generated method stub
 		return findAll(t,createTimeEntity,updTimeEntity,(Sort)null);
 	}
 	@Override	
@@ -447,13 +464,15 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  imp
 	 * @param updTimeEntity
 	 * @return
 	 */
-	private  Specification<T> getSpecification(T t,TimeEntity cretTimeEntity,TimeEntity updTimeEntity){
+	 private  Specification<T> getSpecification(T t,TimeEntity cretTimeEntity,TimeEntity updTimeEntity){
 			return new Specification<T>() {
 			@Override
 			public Predicate toPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
 				List<Predicate>  predicates = getPredicates(root, query, cb,cretTimeEntity,updTimeEntity);
 				if(t!=null)
 					where(t,predicates,root,query,cb);
+				//追加查询
+				addWhere(t,predicates,root,query,cb);
 				return cb.and(predicates.toArray(new Predicate[predicates.size()]));
 			}
 		};
@@ -484,7 +503,7 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  imp
 		//updTimee
 		if(updTimeEntity!=null && updTimeEntity.getEndTime() !=null) {
 			predicates.add(cb.lessThanOrEqualTo(root.get("updTime"), new Date(updTimeEntity.getEndTime())));
-		}
+		}	
 		//删除标识
 		predicates.add(cb.or(cb.equal(root.get("deleted"), 0),cb.isNull(root.get("deleted"))));
 		return predicates;

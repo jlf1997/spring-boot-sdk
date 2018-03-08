@@ -1,5 +1,8 @@
 package com.github.jlf1997.spring_boot_sdk.oper;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
@@ -37,9 +40,9 @@ public class SpringDateJpaOper<T> {
 	 * @param value 比较值
 	 * @return
 	 */
-	public  Predicate eq(String attributeName,Object value) {
-		return cb.equal(root.get(attributeName),  value);
-		
+	public  void eq(List<Predicate>  predicates,String attributeName,Object value) {
+		Predicate predicate =  cb.equal(root.get(attributeName),  value);
+		addPredicate(predicates,predicate);
 	}
 	
 	
@@ -49,9 +52,10 @@ public class SpringDateJpaOper<T> {
 	 * @param value
 	 * @return
 	 */
-	public Predicate notEqual(String attributeName, Object value) {
+	public void notEqual(List<Predicate>  predicates,String attributeName, Object value) {
 		// TODO Auto-generated method stub
-		return cb.notEqual(root.get(attributeName),  value);
+		Predicate predicate =  cb.notEqual(root.get(attributeName),  value);
+		addPredicate(predicates,predicate);
 	}
 
 
@@ -61,13 +65,13 @@ public class SpringDateJpaOper<T> {
 	 * @param value 比较值
 	 * @return
 	 */
-	public Predicate like(String attributeName, Object value) {
+	public void like(List<Predicate>  predicates,String attributeName, Object value) {
 		if(value instanceof String) {
 			String str = (String)value;
-			return cb.like(root.get(attributeName)
+			Predicate predicate =  cb.like(root.get(attributeName)
 					,cb.literal("%"+str+"%"));
-		}
-		return null;
+			addPredicate(predicates,predicate);
+		}		
 	}
 
 	/**
@@ -77,12 +81,13 @@ public class SpringDateJpaOper<T> {
 	 * @return
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Predicate ge(String attributeName, Object value) {
+	public void ge(List<Predicate>  predicates,String attributeName, Object value) {
 		if(value instanceof Comparable) {
 			Comparable comparable = (Comparable) value;
-			return cb.greaterThanOrEqualTo(root.get(attributeName), comparable);
+			Predicate predicate = cb.greaterThanOrEqualTo(root.get(attributeName), comparable);
+			addPredicate(predicates,predicate);
 		}		
-		return null;
+		
 	}
 
 	/**
@@ -92,12 +97,12 @@ public class SpringDateJpaOper<T> {
 	 * @return
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Predicate le(String attributeName, Object value) {
+	public void le(List<Predicate>  predicates,String attributeName, Object value) {
 		if(value instanceof Comparable) {
 			Comparable comparable = (Comparable) value;
-			return cb.lessThanOrEqualTo(root.get(attributeName), comparable);
-		}	
-		return null;
+			Predicate predicate = cb.lessThanOrEqualTo(root.get(attributeName), comparable);
+			addPredicate(predicates,predicate);
+		}			
 	}
 
 	/**
@@ -107,12 +112,12 @@ public class SpringDateJpaOper<T> {
 	 * @return
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Predicate gt(String attributeName, Object value) {
+	public void gt(List<Predicate>  predicates,String attributeName, Object value) {
 		if(value instanceof Comparable) {
 			Comparable comparable = (Comparable) value;
-			return cb.greaterThan(root.get(attributeName), comparable);
-		}
-		return null;
+			Predicate predicate = cb.greaterThan(root.get(attributeName), comparable);
+			addPredicate(predicates,predicate);
+		}		
 	}
 
 	/**
@@ -122,12 +127,12 @@ public class SpringDateJpaOper<T> {
 	 * @return
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Predicate lt(String attributeName, Object value) {
+	public void lt(List<Predicate>  predicates,String attributeName, Object value) {
 		if(value instanceof Comparable) {
 			Comparable comparable = (Comparable) value;
-			return cb.lessThan(root.get(attributeName), comparable);
+			Predicate predicate = cb.lessThan(root.get(attributeName), comparable);
+			addPredicate(predicates,predicate);
 		}		
-		return null;
 	}
 
 
@@ -138,13 +143,13 @@ public class SpringDateJpaOper<T> {
 	 * @param value
 	 * @return
 	 */
-	public Predicate bitExistAny(String attributeName, Object value) {
+	public void bitExistAny(List<Predicate>  predicates,String attributeName, Object value) {
 		if(isBitFunctionValut(value)) {
 			Number number = (Number) value;
 			Expression<Number> ex = bitAnd(attributeName,number);
-			return cb.gt(ex,  cb.literal(0));
+			Predicate predicate = cb.gt(ex,  cb.literal(0));
+			addPredicate(predicates,predicate);
 		}		
-		return null;
 	}
 	
 	
@@ -155,13 +160,13 @@ public class SpringDateJpaOper<T> {
 	 * @param value
 	 * @return
 	 */
-	public Predicate bitExistALL(String attributeName, Object value) {
+	public void bitExistALL(List<Predicate>  predicates,String attributeName, Object value) {
 		if(isBitFunctionValut(value)) {
 			Number number = (Number) value;
 			Expression<Number> ex = bitAnd(attributeName,number);
-			return cb.gt(ex,  cb.literal(0));
+			Predicate predicate = cb.gt(ex,  cb.literal(0));
+			addPredicate(predicates,predicate);
 		}		
-		return null;
 	}
 	
 	/**
@@ -171,13 +176,13 @@ public class SpringDateJpaOper<T> {
 	 * @param value
 	 * @return
 	 */
-	public Predicate bitNotExistALL(String attributeName, Object value) {
+	public void bitNotExistALL(List<Predicate>  predicates,String attributeName, Object value) {
 		if(isBitFunctionValut(value)) {
 			Number number = (Number) value;
 			Expression<Number> ex = bitAnd(attributeName,number);
-			return cb.notEqual(ex,  cb.literal(0));
+			Predicate predicate = cb.notEqual(ex,  cb.literal(0));
+			addPredicate(predicates,predicate);
 		}	
-		return null;
 	}
 	
 	
@@ -216,6 +221,14 @@ public class SpringDateJpaOper<T> {
 			return true;
 		}
 		return false;
+	}
+	
+	
+	private void addPredicate(List<Predicate> predicates,Predicate predicate) {
+		if(predicate!=null) {
+			if(predicates==null) predicates= new ArrayList<>();
+			predicates.add(predicate);
+		}
 	}
 
 	

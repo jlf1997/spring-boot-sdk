@@ -3,6 +3,7 @@ package com.github.jlf1997.spring_boot_sdk.service;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 	/**
 	 * 追加查询条件
 	 */
-	public abstract void addWhere(T t,List<Predicate>  predicates,Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb);
+	public abstract void addWhere(T[] t,List<Predicate>  predicates,Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb);
 	
 
 	/**
@@ -73,61 +74,71 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 	/**
 	 * 自定义查询条件
 	 */
-	private  void where(T t,List<Predicate>  predicates,Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-		if(t!=null) {		
-			Field[] fields = t.getClass().getDeclaredFields();
+	private  void where(List<Predicate>  predicates,Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb,T...t) {
+		if(t!=null&&t.length>0) {	
+			Class<? extends BaseModel> classT = t[0].getClass();
+			Field[] fields = classT.getDeclaredFields();
 			PropertyDescriptor property = null;
 			for (Field field : fields) {				
 				try {
-					property = new PropertyDescriptor(field.getName(), t.getClass());
+					property = new PropertyDescriptor(field.getName(), classT);
 				} catch (IntrospectionException e) {					
 					e.printStackTrace();
 				}
 				Assert.notNull(property, "property must not be null");
 				Method readMethod = RefUtil.getReadMethod(property);				
 				if (readMethod != null ) {					
-					try {						
-						Object value = readMethod.invoke(t);
-						if(value!=null) {
+					try {
+						List<Object> values = RefUtil.getValues(readMethod, t);
+						int size = values.size();
+//						Object value = readMethod.invoke(t[0]);
+						if(values!=null && size>0) {
 							SpringDateJpaOper<T> springDateJpaOper = new SpringDateJpaOper<>(root,query,cb);
 							DBFinder dbOper = RefUtil.getAnnotation(field, DBFinder.class);
 							if(dbOper!=null && dbOper.added()) {								
 								switch(dbOper.opType()) {
 								case EQ:
-									springDateJpaOper.eq(predicates,field.getName(), value);									
+									springDateJpaOper.eq(predicates,field.getName(), values.get(0));									
 									break;
 								case LIKE:	
-									springDateJpaOper.like(predicates,field.getName(), value);									
+									springDateJpaOper.like(predicates,field.getName(), values.get(0));									
 									break;
 								case GE :
-									springDateJpaOper.ge(predicates,field.getName(), value);								
+									springDateJpaOper.ge(predicates,field.getName(), values.get(0));								
 									break;
 								case LE:
-									springDateJpaOper.le(predicates,field.getName(), value);									
+									springDateJpaOper.le(predicates,field.getName(), values.get(0));									
 									break;
 								case LT:
-									springDateJpaOper.lt(predicates,field.getName(), value);
+									springDateJpaOper.lt(predicates,field.getName(), values.get(0));
 									break;
 								case GT:
-									springDateJpaOper.gt(predicates,field.getName(), value);
+									springDateJpaOper.gt(predicates,field.getName(), values.get(0));
 									break;
 								case BIT_EXIST_ANY:
-									springDateJpaOper.bitExistAny(predicates,field.getName(), value);
+									springDateJpaOper.bitExistAny(predicates,field.getName(), values.get(0));
 									break;
 								case BIT_NOT_EXIST_ALL:
-									springDateJpaOper.bitNotExistALL(predicates,field.getName(), value);
+									springDateJpaOper.bitNotExistALL(predicates,field.getName(), values.get(0));
 									break;
 								case BIT_EXIST_ALL:
-									springDateJpaOper.bitExistALL(predicates,field.getName(), value);
+									springDateJpaOper.bitExistALL(predicates,field.getName(), values.get(0));
 									break;
 								case NOT_EQUAL:
-									springDateJpaOper.notEqual(predicates,field.getName(), value);
+									springDateJpaOper.notEqual(predicates,field.getName(), values.get(0));
 									break;
+								case BETWEEN:
+									Assert.isTrue(size>1, "between操作 必须包含2个操作数");									
+									springDateJpaOper.between(predicates,field.getName(), values.get(0),values.get(1));
+									break;
+								case IS_NULL:
+									springDateJpaOper.isNull(predicates,field.getName());
+									break;		
 								default:
 									break;								
 								}								
 							}else if(dbOper.added()){
-								predicates.add(cb.equal(root.get(field.getName()),  value));
+								predicates.add(cb.equal(root.get(field.getName()),  values.get(0)));
 							}
 						}
 					}
@@ -141,63 +152,147 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 	}
 	
 	
-	
+	////////////////////findAll/////////////////////////////
 
-	public List<T> findAll(T t, Long creTimeBegin, Long creTimeEnd, Long updTimeBegin, Long updTimeEnd) {	
-		return findAll(t,creTimeBegin,creTimeEnd,updTimeBegin,updTimeEnd,(String)null,(Direction)null);
+
+	/**
+	 * 条件查询所有
+	 * @param t
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<T> findAll(T... t) {
+		return findAll((SpringDataJpaFinder<T>)null,(Sort)null,t);
+	}
+	
+	/**
+	 * 条件查询所有
+	 * @param sdjFinder
+	 * @param t
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<T> findAll(SpringDataJpaFinder<T> sdjFinder,T...t) {
+		return findAll(sdjFinder,(Sort)null,t);
+	}
+	
+	/**
+	 * 条件查询所有
+	 * @param sortStr
+	 * @param direction
+	 * @param t
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<T> findAll(String sortStr,
+			Direction direction,T...t) {			
+		return findAll((SpringDataJpaFinder<T>) null,sortStr,direction,t);
+	}
+	
+	/**
+	 * 条件查询所有
+	 * @param sdjFinder
+	 * @param sortStr
+	 * @param direction
+	 * @param t
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<T> findAll(SpringDataJpaFinder<T> sdjFinder,String sortStr,
+			Direction direction,T...t) {
+		Sort sort = null;
+		if(sortStr==null || direction==null) {
+			String[] sorStrArray = sortStr.split(",");
+			sort = new Sort(direction, sorStrArray);
+		}		
+		return findAll(sdjFinder,sort,t);
+	}
+	/**
+	 * 条件查询所有属性
+	 * @param t
+	 * @param createTimeEntity
+	 * @param updTimeEntity
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<T> findAll(SpringDataJpaFinder<T> sdjFinder,Sort sort,T... t){		
+		List<T> list =  specjpa().findAll(getSpecification(sdjFinder,t),sort);
+		setSelect(list);
+		return list;
+	}
+	
+	////////////////////////////////////////////////////////////////////
+	
+	
+	/**
+	 * 分页条件查询
+	 * @param sdjFinder
+	 * @param pageSize
+	 * @param pageIndex
+	 * @param t
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public Page<T> findAllPage(SpringDataJpaFinder<T> sdjFinder, Integer pageSize, Integer pageIndex,T...t) {		
+		return findAllPage((SpringDataJpaFinder<T>)null,(String)null,(Direction)null,pageSize,pageIndex,t);
 	}
 	
 	
-	public List<T> findAll(T t, TimeEntity createTimeEntity, TimeEntity updTimeEntity) {
-		return findAll(t,(SpringDataJpaFinder<T>)null,createTimeEntity,updTimeEntity,(Sort)null);
-	}
-	
-	
-	public List<T> findAll(T t, SpringDataJpaFinder<T> sdjFinder,TimeEntity createTimeEntity, TimeEntity updTimeEntity) {
-		return findAll(t,sdjFinder,createTimeEntity,updTimeEntity,(Sort)null);
-	}
-	
-	
-		
-	public Page<T> findAllPage(T t, Long creTimeBegin, Long creTimeEnd, Long updTimeBegin, Long updTimeEnd, String sortStr,
-			Direction direction, Integer pageSize, Integer pageIndex) {
+	/**
+	 * 分页条件查询
+	 * @param sdjFinder
+	 * @param sortStr
+	 * @param direction
+	 * @param pageSize
+	 * @param pageIndex
+	 * @param t
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public Page<T> findAllPage(SpringDataJpaFinder<T> sdjFinder,String sortStr,
+			Direction direction, Integer pageSize, Integer pageIndex,T...t) {
 		String[] sorStrArray = sortStr.split(",");
 		Sort sort = new Sort(direction, sorStrArray);
-		PageRequest pageRequest = new PageRequest(pageIndex,pageSize,sort);	
-		TimeEntity createTimeEntity = new TimeEntity();
-		createTimeEntity.setBegainTime(creTimeBegin); 
-		createTimeEntity.setEndTime(creTimeEnd); 
-		TimeEntity updTimeEntity = new TimeEntity();
-		updTimeEntity.setBegainTime(updTimeBegin); 
-		updTimeEntity.setEndTime(updTimeEnd);
-		return findAllPage(t, createTimeEntity, updTimeEntity,pageRequest);
-	}
-	
-	
-	/**
-	 * 分页条件查询
-	 * @param t
-	 * @param pageRequest
-	 * @param createTimeEntity
-	 * @param updTimeEntity
-	 * @return
-	 */
-	
-	public Page<T> findAllPage(T t,TimeEntity createTimeEntity,TimeEntity updTimeEntity,PageRequest pageRequest) {		
-		return findAllPage(t,(SpringDataJpaFinder<T>)null,createTimeEntity,updTimeEntity,pageRequest);
+		PageRequest pageRequest = new PageRequest(pageIndex,pageSize,sort);			
+		return findAllPage(sdjFinder,pageRequest,t);
 	}
 	
 	/**
 	 * 分页条件查询
+	 * @param sortStr
+	 * @param direction
+	 * @param pageSize
+	 * @param pageIndex
 	 * @param t
-	 * @param sdjFinder 自定义查询对象
-	 * @param createTimeEntity
-	 * @param updTimeEntity
-	 * @param pageRequest
 	 * @return
 	 */
-	public Page<T> findAllPage(T t,SpringDataJpaFinder<T> sdjFinder, TimeEntity createTimeEntity, TimeEntity updTimeEntity, PageRequest pageRequest) {
-		Page<T> page =  specjpa().findAll(getSpecification(t,sdjFinder,createTimeEntity,updTimeEntity),pageRequest);	
+	@SuppressWarnings("unchecked")	
+	public Page<T> findAllPage(String sortStr,
+			Direction direction, Integer pageSize, Integer pageIndex,T...t) {				
+		return findAllPage((SpringDataJpaFinder<T>)null,sortStr,direction,pageSize,pageIndex,t);
+	}	
+	
+	/**
+	 * 分页条件查询
+	 * @param pageRequest
+	 * @param t
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public Page<T> findAllPage(PageRequest pageRequest,T...t) {		
+		return findAllPage((SpringDataJpaFinder<T>)null,pageRequest,t);
+	}
+	
+	/**
+	 * 分页条件查询
+	 * @param sdjFinder
+	 * @param pageRequest
+	 * @param t
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public Page<T> findAllPage(SpringDataJpaFinder<T> sdjFinder, PageRequest pageRequest,T...t) {
+		Page<T> page =  specjpa().findAll(getSpecification(sdjFinder,t),pageRequest);	
 		setSelect(page);
 		return page;
 		
@@ -205,27 +300,33 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 	
 	
 	
-	public T find(T t,TimeEntity createTimeEntity,TimeEntity updTimeEntity) {
-		List<T> list = specjpa().findAll(getSpecification(t,null,createTimeEntity,updTimeEntity));
+	/**
+	 * 
+	 * @param t
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public T find(T... t) {
+		return find((SpringDataJpaFinder<T>)null ,t);
+	}
+	
+	/***
+	 * 
+	 * @param sdjFinder
+	 * @param t
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public T find(SpringDataJpaFinder<T> sdjFinder,T... t) {
+		List<T> list = specjpa().findAll(getSpecification(sdjFinder,t));
 		if(list==null || list.size()!=1) {
 			return null;
 		}else {
 			setSelect(list);
 			return list.get(0);
 		}
-	}
+	}	
 	
-	
-	public T find(T t, Long creTimeBegin, Long creTimeEnd, Long updTimeBegin, Long updTimeEnd, String sortStr,
-			Direction direction, Integer pageSize, Integer pageIndex) {
-		TimeEntity createTimeEntity = new TimeEntity();
-		createTimeEntity.setBegainTime(creTimeBegin); 
-		createTimeEntity.setEndTime(creTimeEnd); 
-		TimeEntity updTimeEntity = new TimeEntity();
-		updTimeEntity.setBegainTime(updTimeBegin); 
-		updTimeEntity.setEndTime(updTimeEnd);
-		return find(t, createTimeEntity, updTimeEntity);
-	}
 	
 	/**
 	 * 保存或更新：根据是否有主键自动判断
@@ -278,33 +379,7 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 	
 	
 	
-	public List<T> findAll(T t, Long creTimeBegin, Long creTimeEnd, Long updTimeBegin, Long updTimeEnd, String sortStr,
-			Direction direction) {
-		Sort sort = null;
-		if(sortStr==null || direction==null) {
-			String[] sorStrArray = sortStr.split(",");
-			sort = new Sort(direction, sorStrArray);
-		}			
-		TimeEntity createTimeEntity = new TimeEntity();
-		createTimeEntity.setBegainTime(creTimeBegin); 
-		createTimeEntity.setEndTime(creTimeEnd); 
-		TimeEntity updTimeEntity = new TimeEntity();
-		updTimeEntity.setBegainTime(updTimeBegin); 
-		updTimeEntity.setEndTime(updTimeEnd);
-		return findAll(t,(SpringDataJpaFinder<T>)null, createTimeEntity, updTimeEntity,sort);
-	}
-	/**
-	 * 条件查询所有属性
-	 * @param t
-	 * @param createTimeEntity
-	 * @param updTimeEntity
-	 * @return
-	 */
-	public List<T> findAll(T t,SpringDataJpaFinder<T> sdjFinder,TimeEntity createTimeEntity,TimeEntity updTimeEntity,Sort sort){		
-		List<T> list =  specjpa().findAll(getSpecification(t,sdjFinder,createTimeEntity,updTimeEntity),sort);
-		setSelect(list);
-		return list;
-	}
+	
 	
 	/**
 	 * 删除
@@ -313,7 +388,7 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 	 */
 	@Transactional
 	public List<T> delete(T t) {
-		List<T> list = findAll(t,null,null);
+		List<T> list = findAll(t);
 		list.stream().forEach(action->{
 			action.setDeleted(1);
 		});		
@@ -460,16 +535,16 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 	 * @param updTimeEntity
 	 * @return
 	 */
-	 private  Specification<T> getSpecification(T t,SpringDataJpaFinder<T> sdjFinder,TimeEntity cretTimeEntity,TimeEntity updTimeEntity){
+	 private  Specification<T> getSpecification(SpringDataJpaFinder<T> sdjFinder,T... t){
 			return new Specification<T>() {
 			@Override
 			public Predicate toPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-				List<Predicate>  predicates = getPredicates(root, query, cb,cretTimeEntity,updTimeEntity);
+				List<Predicate>  predicates = getPredicates(root, query, cb,t);
 				if(t!=null) {
 					if(sdjFinder!=null) {
-						sdjFinder.where(t,predicates,root, query, cb);
+						sdjFinder.where(predicates,root, query, cb,t);
 					}else {
-						where(t,predicates,root,query,cb);
+						where(predicates,root,query,cb,t);
 					}
 				}
 				//追加查询
@@ -487,24 +562,30 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 	 * @param updTimeEntity
 	 * @return
 	 */
-	private List<Predicate> getPredicates(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb,TimeEntity createTimeEntity,TimeEntity updTimeEntity) {
+	private List<Predicate> getPredicates(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb,T...t) {
 		List<Predicate>  predicates = new ArrayList<>();		
-		//createTimeb
-		if(createTimeEntity!=null && createTimeEntity.getBegainTime() !=null ) {
-			predicates.add(cb.greaterThanOrEqualTo(root.get("creTime"), new Date(createTimeEntity.getBegainTime())));
-		}
-		//createTimee
-		if(createTimeEntity!=null && createTimeEntity.getEndTime() !=null) {
-			predicates.add(cb.lessThanOrEqualTo(root.get("creTime"), new Date(createTimeEntity.getEndTime())));
-		}
-		//updTimeb
-		if(updTimeEntity!=null && updTimeEntity.getBegainTime() !=null ) {
-			predicates.add(cb.greaterThanOrEqualTo(root.get("updTime"), new Date(updTimeEntity.getBegainTime())));
-		}
-		//updTimee
-		if(updTimeEntity!=null && updTimeEntity.getEndTime() !=null) {
-			predicates.add(cb.lessThanOrEqualTo(root.get("updTime"), new Date(updTimeEntity.getEndTime())));
-		}	
+		if(t!=null) {
+			if(t.length>0 && t[0]!=null) {
+				Date creTimeBegin = t[0].getCreTime();
+				Date updTimeBegin = t[0].getUpdTime();
+				if(creTimeBegin!=null) {
+					predicates.add(cb.greaterThanOrEqualTo(root.get("creTime"), creTimeBegin));
+				}
+				if(updTimeBegin!=null) {
+					predicates.add(cb.greaterThanOrEqualTo(root.get("updTime"), updTimeBegin));
+				}					
+			}
+			if(t.length>1 && t[1]!=null) {
+				Date creTimeEnd = t[0].getCreTime();
+				Date updTimeEnd = t[0].getUpdTime();
+				if(creTimeEnd!=null) {
+					predicates.add(cb.greaterThanOrEqualTo(root.get("creTime"), creTimeEnd));
+				}
+				if(updTimeEnd!=null) {
+					predicates.add(cb.greaterThanOrEqualTo(root.get("updTime"), updTimeEnd));
+				}
+			}
+		}			
 		//删除标识
 		predicates.add(cb.or(cb.equal(root.get("deleted"), 0),cb.isNull(root.get("deleted"))));
 		return predicates;

@@ -16,5 +16,5 @@ import javax.persistence.criteria.Root;
  */
 public interface SpringDataJpaFinder<T> {
 
-	public void where(T t,List<Predicate>  predicates,Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb);
+	public void where(List<Predicate>  predicates,Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb,T...t);
 }

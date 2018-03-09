@@ -23,7 +23,11 @@ public enum Oper {
 	 /** 二进制位 代表状态 均不存在*/
 	 BIT_NOT_EXIST_ANY,
 	 /** 不等于*/
-	 NOT_EQUAL
+	 NOT_EQUAL,
+	 /** 范围*/
+	 BETWEEN,
+	 /** 空值*/
+	 IS_NULL
 	 
 	
 }

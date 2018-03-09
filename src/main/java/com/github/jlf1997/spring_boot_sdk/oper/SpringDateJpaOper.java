@@ -187,6 +187,27 @@ public class SpringDateJpaOper<T> {
 	
 	
 	/**
+	 * 
+	 * @param predicates
+	 * @param name
+	 * @param value
+	 */
+	public void between(List<Predicate> predicates, String attributeName, Object value1,Object value2) {
+		// TODO Auto-generated method stub
+		Comparable comparable1 = (Comparable) value1;
+		Comparable comparable2 = (Comparable) value2;
+		Predicate predicate = cb.between(root.get(attributeName), comparable1, comparable2);
+		addPredicate(predicates,predicate);
+	}
+	
+	public void isNull(List<Predicate> predicates, String attributeName) {
+		// TODO Auto-generated method stub
+		Predicate predicate = cb.isNull(root.get(attributeName));
+		addPredicate(predicates,predicate);
+	}
+	
+	
+	/**
 	 * 获取按位与 表达式
 	 * @param val1 数据库中字段
 	 * @param val2 运算值
@@ -230,6 +251,10 @@ public class SpringDateJpaOper<T> {
 			predicates.add(predicate);
 		}
 	}
+
+	
+
+	
 
 	
 	

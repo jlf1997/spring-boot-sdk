@@ -3,8 +3,11 @@ package com.github.jlf1997.spring_boot_sdk.util;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 
 
@@ -39,6 +42,20 @@ public class RefUtil {
 		 }
 		 return null;
 		
+		
+	}
+	
+	
+	public static <T> List<Object> getValues(Method readMethod,T[] ts) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+			List<Object> list = new ArrayList<>();
+			Object obj = null;
+			for(T t:ts) {
+				obj = readMethod.invoke(t);
+				if(obj!=null) {
+					list.add(obj);
+				}
+			}			
+			return list;
 		
 	}
 	

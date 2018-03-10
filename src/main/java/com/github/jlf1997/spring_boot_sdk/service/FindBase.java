@@ -1,9 +1,6 @@
 package com.github.jlf1997.spring_boot_sdk.service;
 
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -23,13 +20,9 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.util.Assert;
 
 import com.github.jlf1997.spring_boot_sdk.model.BaseModel;
-import com.github.jlf1997.spring_boot_sdk.model.TimeEntity;
-import com.github.jlf1997.spring_boot_sdk.oper.DBFinder;
-import com.github.jlf1997.spring_boot_sdk.oper.SpringDateJpaOper;
-import com.github.jlf1997.spring_boot_sdk.util.RefUtil;
+import com.github.jlf1997.spring_boot_sdk.util.SpringDataJpaUtils;
 
 
 
@@ -74,81 +67,7 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 	/**
 	 * 自定义查询条件
 	 */
-	private  void where(List<Predicate>  predicates,Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb,T...t) {
-		if(t!=null&&t.length>0) {	
-			Class<? extends BaseModel> classT = t[0].getClass();
-			Field[] fields = classT.getDeclaredFields();
-			PropertyDescriptor property = null;
-			for (Field field : fields) {				
-				try {
-					property = new PropertyDescriptor(field.getName(), classT);
-				} catch (IntrospectionException e) {					
-					e.printStackTrace();
-				}
-				Assert.notNull(property, "property must not be null");
-				Method readMethod = RefUtil.getReadMethod(property);				
-				if (readMethod != null ) {					
-					try {
-						List<Object> values = RefUtil.getValues(readMethod, t);
-						int size = values.size();
-						if(values!=null && size>0) {
-							SpringDateJpaOper<T> springDateJpaOper = new SpringDateJpaOper<>(root,query,cb);
-							DBFinder dbOper = RefUtil.getAnnotation(field, DBFinder.class);
-							if(dbOper!=null && dbOper.added()) {								
-								switch(dbOper.opType()) {
-								case EQ:
-									springDateJpaOper.eq(predicates,field.getName(), values.get(0));									
-									break;
-								case LIKE:	
-									springDateJpaOper.like(predicates,field.getName(), values.get(0));									
-									break;
-								case GE :
-									springDateJpaOper.ge(predicates,field.getName(), values.get(0));								
-									break;
-								case LE:
-									springDateJpaOper.le(predicates,field.getName(), values.get(0));									
-									break;
-								case LT:
-									springDateJpaOper.lt(predicates,field.getName(), values.get(0));
-									break;
-								case GT:
-									springDateJpaOper.gt(predicates,field.getName(), values.get(0));
-									break;
-								case BIT_EXIST_ANY:
-									springDateJpaOper.bitExistAny(predicates,field.getName(), values.get(0));
-									break;
-								case BIT_NOT_EXIST_ALL:
-									springDateJpaOper.bitNotExistALL(predicates,field.getName(), values.get(0));
-									break;
-								case BIT_EXIST_ALL:
-									springDateJpaOper.bitExistALL(predicates,field.getName(), values.get(0));
-									break;
-								case NOT_EQUAL:
-									springDateJpaOper.notEqual(predicates,field.getName(), values.get(0));
-									break;
-								case BETWEEN:
-									Assert.isTrue(size>1, "between操作 必须包含2个操作数");									
-									springDateJpaOper.between(predicates,field.getName(), values.get(0),values.get(1));
-									break;
-								case IS_NULL:
-									springDateJpaOper.isNull(predicates,field.getName());
-									break;		
-								default:
-									break;								
-								}								
-							}else if(dbOper.added()){
-								predicates.add(cb.equal(root.get(field.getName()),  values.get(0)));
-							}
-						}
-					}
-					catch (Throwable ex) {
-						ex.printStackTrace();
-					}
-				}
-			}
-		}
-		
-	}
+	
 	
 	
 	////////////////////findAll/////////////////////////////
@@ -374,12 +293,6 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 	}
 	
 	
-	
-	
-	
-	
-	
-	
 	/**
 	 * 删除
 	 * @param t
@@ -543,12 +456,13 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 					if(sdjFinder!=null) {
 						sdjFinder.where(predicates,root, query, cb,t);
 					}else {
-						where(predicates,root,query,cb,t);
+						SpringDataJpaUtils.where(predicates,root,query,cb,t);
 					}
 				}
 				//追加查询
 				addWhere(t,predicates,root,query,cb);
-				return cb.and(predicates.toArray(new Predicate[predicates.size()]));
+				query.where(predicates.toArray(new Predicate[predicates.size()]));		
+				return query.getRestriction();
 			}
 		};
 	}
@@ -586,7 +500,7 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 			}
 		}			
 		//删除标识
-		predicates.add(cb.or(cb.equal(root.get("deleted"), 0),cb.isNull(root.get("deleted"))));
+		predicates.add(cb.or(cb.equal(root.get("deleted"), 0),cb.isNull(root.get("deleted"))));		
 		return predicates;
 		}
 	

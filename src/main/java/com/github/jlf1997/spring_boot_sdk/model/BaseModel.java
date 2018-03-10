@@ -93,9 +93,9 @@ public class BaseModel {
 		this.creTime = creTime;
 	}
 	
-	public void setCreTime(Long creTime) { 
-		this.creTime = new Date(creTime);
-	}
+//	public void setCreTime(Long creTime) { 
+//		this.creTime = new Date(creTime);
+//	}
 
 	public Date getUpdTime() {
 		return updTime;
@@ -105,9 +105,9 @@ public class BaseModel {
 		this.updTime = updTime;
 	}
 	
-	public void setUpdTime(Long updTime) {
-		this.updTime = new Date(updTime);
-	}
+//	public void setUpdTime(Long updTime) {
+//		this.updTime = new Date(updTime);
+//	}
 
 	public Integer getDeleted() {
 		return deleted;

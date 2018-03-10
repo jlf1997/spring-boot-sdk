@@ -22,5 +22,6 @@ import java.lang.annotation.Target;
 @Target(FIELD)
 public @interface DBFinder {
 	public boolean added() default true;
-	public Oper opType() default  Oper.EQ;	
+	public Oper opType() default  Oper.EQ;
+	public boolean duplicateable() default true;
 }

@@ -91,7 +91,6 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 					try {
 						List<Object> values = RefUtil.getValues(readMethod, t);
 						int size = values.size();
-//						Object value = readMethod.invoke(t[0]);
 						if(values!=null && size>0) {
 							SpringDateJpaOper<T> springDateJpaOper = new SpringDateJpaOper<>(root,query,cb);
 							DBFinder dbOper = RefUtil.getAnnotation(field, DBFinder.class);
@@ -333,9 +332,9 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 	 * @param t
 	 * @return
 	 */
-	@Transactional
+//	@Transactional
 	public T save(T t) {
-		try {
+		try {		
 			return jpa().save(t);
 		}catch (Exception e) {
 			e.printStackTrace();

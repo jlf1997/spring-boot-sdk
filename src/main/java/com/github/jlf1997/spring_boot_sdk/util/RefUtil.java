@@ -34,15 +34,18 @@ public class RefUtil {
 		return readMethod;
 	} 
 	
-	public  static <T extends Annotation> T  getAnnotation(Field field,Class<T> annotationClass) {
+	public  static <A extends Annotation> A  getAnnotation(Field field,Class<A> annotationClass) {
 		boolean fieldHasAnno = field.isAnnotationPresent(annotationClass);  
 		 if(fieldHasAnno){  
-			 T fieldAnno = field.getAnnotation(annotationClass);
+			 A fieldAnno = field.getAnnotation(annotationClass);
 			 return fieldAnno;
 		 }
-		 return null;
-		
-		
+		 return null;	
+	}
+	
+	public  static <A extends Annotation,T> A  getAnnotation(T t,Class<A> annotationClass) throws NoSuchFieldException, SecurityException {
+		Field field = annotationClass.getDeclaredField("");
+		return getAnnotation(field,annotationClass);
 	}
 	
 	

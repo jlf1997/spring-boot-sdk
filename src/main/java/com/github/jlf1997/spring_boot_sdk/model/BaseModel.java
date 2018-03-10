@@ -56,6 +56,13 @@ public class BaseModel {
 	@ApiModelProperty(value = "是否删除", example = "1")
 	protected Integer deleted  ;
 	
+	
+	
+	/**
+	 * 删除时间
+	 */	
+	protected Long delTime = -1L;
+	
 	@CreatedBy
 	@ApiModelProperty(value = "创建人id", example = "1")
 	protected Long createBy;

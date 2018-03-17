@@ -506,7 +506,7 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 			//删除标识
 			
 		}			
-		if(t!=null && t.length>0 && new Integer("1").equals(t[0].getDeleted())) {
+		if(t!=null && t.length>0 && new Integer("-1").equals(t[0].getDeleted())) {
 			
 		}else {
 			predicates.add(cb.or(cb.equal(root.get("deleted"), 0),cb.isNull(root.get("deleted"))));	

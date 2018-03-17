@@ -50,7 +50,11 @@ public class SpringDataJpaUtils {
 			Class<? extends BaseModel> classT = t[0].getClass();
 			Field[] fields = classT.getDeclaredFields();
 			PropertyDescriptor property = null;
-			for (Field field : fields) {				
+			for (Field field : fields) {
+				DBFinder dbOper = RefUtil.getAnnotation(field, DBFinder.class);
+				if(dbOper!=null && !dbOper.added()) {
+					break;
+				}
 				try {
 					property = new PropertyDescriptor(field.getName(), classT);
 				} catch (IntrospectionException e) {					
@@ -64,7 +68,7 @@ public class SpringDataJpaUtils {
 						int size = values.size();
 						if(values!=null && size>0) {
 							SpringDateJpaOper<T> springDateJpaOper = new SpringDateJpaOper<>(root,query,cb);
-							DBFinder dbOper = RefUtil.getAnnotation(field, DBFinder.class);
+							
 							if(dbOper!=null && dbOper.added()) {								
 								switch(dbOper.opType()) {
 								case EQ:
@@ -107,7 +111,7 @@ public class SpringDataJpaUtils {
 								default:
 									break;								
 								}								
-							}else if(dbOper.added()){
+							}else if(dbOper==null){
 								predicates.add(cb.equal(root.get(field.getName()),  values.get(0)));
 							}
 						}

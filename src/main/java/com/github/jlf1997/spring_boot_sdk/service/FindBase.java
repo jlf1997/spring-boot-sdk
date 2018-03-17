@@ -119,11 +119,12 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 	public List<T> findAll(SpringDataJpaFinder<T> sdjFinder,String sortStr,
 			Direction direction,T...t) {
 		Sort sort = null;
-		if(sortStr==null || direction==null) {
+		if(sortStr!=null && direction!=null) {
 			String[] sorStrArray = sortStr.split(",");
 			sort = new Sort(direction, sorStrArray);
 		}		
 		return findAll(sdjFinder,sort,t);
+		
 	}
 	/**
 	 * 条件查询所有属性
@@ -169,8 +170,11 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 	@SuppressWarnings("unchecked")
 	public Page<T> findAllPage(SpringDataJpaFinder<T> sdjFinder,String sortStr,
 			Direction direction, Integer pageSize, Integer pageIndex,T...t) {
-		String[] sorStrArray = sortStr.split(",");
-		Sort sort = new Sort(direction, sorStrArray);
+		Sort sort = null;
+		if(sortStr!=null && direction!=null) {
+			String[] sorStrArray = sortStr.split(",");
+			 sort = new Sort(direction, sorStrArray);
+		}
 		PageRequest pageRequest = new PageRequest(pageIndex,pageSize,sort);			
 		return findAllPage(sdjFinder,pageRequest,t);
 	}
@@ -303,6 +307,7 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 		List<T> list = findAll(t);
 		list.stream().forEach(action->{
 			action.setDeleted(1);
+			action.setDelTime(new Date().getTime());
 		});		
 		return jpa().save(list);
 	}
@@ -461,8 +466,8 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 				}
 				//追加查询
 				addWhere(t,predicates,root,query,cb);
-				query.where(predicates.toArray(new Predicate[predicates.size()]));		
-				return query.getRestriction();
+//				query.where();		
+				return cb.and(predicates.toArray(new Predicate[predicates.size()]));
 			}
 		};
 	}
@@ -489,18 +494,24 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 				}					
 			}
 			if(t.length>1 && t[1]!=null) {
-				Date creTimeEnd = t[0].getCreTime();
-				Date updTimeEnd = t[0].getUpdTime();
+				Date creTimeEnd = t[1].getCreTime();
+				Date updTimeEnd = t[1].getUpdTime();
 				if(creTimeEnd!=null) {
-					predicates.add(cb.greaterThanOrEqualTo(root.get("creTime"), creTimeEnd));
+					predicates.add(cb.lessThanOrEqualTo(root.get("creTime"), creTimeEnd));
 				}
 				if(updTimeEnd!=null) {
-					predicates.add(cb.greaterThanOrEqualTo(root.get("updTime"), updTimeEnd));
+					predicates.add(cb.lessThanOrEqualTo(root.get("updTime"), updTimeEnd));
 				}
 			}
+			//删除标识
+			
 		}			
-		//删除标识
-		predicates.add(cb.or(cb.equal(root.get("deleted"), 0),cb.isNull(root.get("deleted"))));		
+		if(t!=null && t.length>0 && new Integer("1").equals(t[0].getDeleted())) {
+			
+		}else {
+			predicates.add(cb.or(cb.equal(root.get("deleted"), 0),cb.isNull(root.get("deleted"))));	
+		}
+			
 		return predicates;
 		}
 	

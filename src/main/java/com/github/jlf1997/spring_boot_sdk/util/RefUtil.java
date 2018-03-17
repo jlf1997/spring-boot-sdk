@@ -34,6 +34,11 @@ public class RefUtil {
 		return readMethod;
 	} 
 	
+	public static <T> T getNewInstance() {
+		return null;
+		
+	}
+	
 	public  static <A extends Annotation> A  getAnnotation(Field field,Class<A> annotationClass) {
 		boolean fieldHasAnno = field.isAnnotationPresent(annotationClass);  
 		 if(fieldHasAnno){  

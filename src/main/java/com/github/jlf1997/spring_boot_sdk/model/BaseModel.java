@@ -25,7 +25,14 @@ public class BaseModel {
 	public BaseModel() {
 		
 	}
-	
+	public BaseModel(Long creTime,Long updTime) {
+		if(creTime!=null) {
+			this.creTime = new Date(creTime);
+		}
+		if(updTime!=null) {
+			this.updTime = new Date(updTime);
+		}
+	}
 
 	/**
 	 * 综合状态码
@@ -139,6 +146,14 @@ public class BaseModel {
 
 	public void setVersion(Long version) {
 		this.version = version;
+	}
+
+	public Long getDelTime() {
+		return delTime;
+	}
+
+	public void setDelTime(Long delTime) {
+		this.delTime = delTime;
 	}
 
 	

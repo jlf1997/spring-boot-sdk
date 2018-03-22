@@ -53,7 +53,7 @@ public class SpringDataJpaUtils {
 			for (Field field : fields) {
 				DBFinder dbOper = RefUtil.getAnnotation(field, DBFinder.class);
 				if(dbOper!=null && !dbOper.added()) {
-					break;
+					continue;
 				}
 				try {
 					property = new PropertyDescriptor(field.getName(), classT);

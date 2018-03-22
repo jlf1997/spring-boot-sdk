@@ -196,7 +196,9 @@ public class SpringDateJpaOper<T> {
 		// TODO Auto-generated method stub
 		Comparable comparable1 = (Comparable) value1;
 		Comparable comparable2 = (Comparable) value2;
-		Predicate predicate = cb.between(root.get(attributeName), comparable1, comparable2);
+		Predicate p1=cb.greaterThanOrEqualTo(root.get(attributeName), comparable1);
+		Predicate p2=cb.lessThanOrEqualTo(root.get(attributeName), comparable2);
+		Predicate predicate = cb.and(p1, p2);
 		addPredicate(predicates,predicate);
 	}
 	

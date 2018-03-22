@@ -44,6 +44,9 @@ public class ResponseObject<V> {
 	public ResponseObject<V> success(V data) {
 		this.success = true;
 		this.data = data;
+		if(data instanceof String) {
+			this.msg = data.toString();
+		}
 		return this;
 	}
 	

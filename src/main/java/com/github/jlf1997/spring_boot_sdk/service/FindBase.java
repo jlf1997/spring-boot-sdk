@@ -457,17 +457,23 @@ public abstract class FindBase<T extends BaseModel,ID extends Serializable>  {
 			@Override
 			public Predicate toPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
 				List<Predicate>  predicates = getPredicates(root, query, cb,t);
+				boolean isGroup = false;
 				if(t!=null) {
 					if(sdjFinder!=null) {
-						sdjFinder.where(predicates,root, query, cb,t);
+						isGroup = sdjFinder.where(predicates,root, query, cb,t);
 					}else {
 						SpringDataJpaUtils.where(predicates,root,query,cb,t);
 					}
 				}
 				//追加查询
 				addWhere(t,predicates,root,query,cb);
-//				query.where();		
-				return cb.and(predicates.toArray(new Predicate[predicates.size()]));
+
+				 query.where(cb.and(predicates.toArray(new Predicate[predicates.size()])));  
+				 if(isGroup) {
+					 return query.getGroupRestriction();
+				 }
+				 return query.getRestriction(); 
+//				return cb.and(predicates.toArray(new Predicate[predicates.size()]));
 			}
 		};
 	}
